@@ -1,0 +1,243 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum PapelUsuario {
+  ADMINISTRADOR_PRINCIPAL
+  PROPRIETARIO
+}
+
+enum PapelPerfil {
+  PROPRIETARIO
+  EDITOR
+}
+
+enum TipoEvento {
+  VISUALIZACAO
+  CLIQUE
+}
+
+enum TipoDispositivo {
+  MOBILE
+  TABLET
+  DESKTOP
+  OUTRO
+}
+
+model Usuario {
+  id                   String                 @id @default(uuid())
+  nome                 String                 @db.VarChar(120)
+  email                String                 @unique @db.VarChar(191)
+  senhaHash            String                 @db.VarChar(255)
+  papel                PapelUsuario           @default(PROPRIETARIO)
+  limitePerfis         Int                    @default(3)
+  ativo                Boolean                @default(true)
+  criadoEm             DateTime               @default(now())
+  atualizadoEm         DateTime               @updatedAt
+  excluidoEm           DateTime?
+
+  permissoes           PermissaoPerfil[]
+  sessoes              Sessao[]
+  tokensRecuperacao    TokenRecuperacaoSenha[]
+  convitesCriados      Convite[]              @relation("ConvitesCriados")
+  historicosAlteracao  HistoricoAlteracao[]
+  registrosAuditoria   RegistroAuditoria[]
+
+  @@index([email])
+  @@index([excluidoEm])
+  @@map("usuarios")
+}
+
+model Perfil {
+  id                   String                 @id @default(uuid())
+  slug                 String                 @unique @db.VarChar(80)
+  nome                 String                 @db.VarChar(120)
+  descricao            String?                @db.VarChar(500)
+  fotoUrl              String?                @db.VarChar(255)
+  ativo                Boolean                @default(true)
+  permiteIndexacao     Boolean                @default(true)
+  tituloSeo            String?                @db.VarChar(120)
+  descricaoSeo         String?                @db.VarChar(255)
+  imagemCompartilhamento String?              @db.VarChar(255)
+  visualizacoesTotais  Int                    @default(0)
+  cliquesTotais        Int                    @default(0)
+  criadoEm             DateTime               @default(now())
+  atualizadoEm         DateTime               @updatedAt
+  excluidoEm           DateTime?
+
+  permissoes           PermissaoPerfil[]
+  links                Link[]
+  configuracaoVisual   ConfiguracaoVisual?
+  convites             Convite[]
+  eventosAcesso        EventoAcesso[]
+  historicos           HistoricoAlteracao[]
+
+  @@index([slug])
+  @@index([ativo, excluidoEm])
+  @@map("perfis")
+}
+
+model PermissaoPerfil {
+  id                   String                 @id @default(uuid())
+  usuarioId            String
+  perfilId             String
+  papel                PapelPerfil            @default(PROPRIETARIO)
+  criadoEm             DateTime               @default(now())
+
+  usuario              Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  perfil               Perfil                 @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, perfilId])
+  @@index([usuarioId])
+  @@index([perfilId])
+  @@map("permissoes_perfil")
+}
+
+model Link {
+  id                   String                 @id @default(uuid())
+  perfilId             String
+  titulo               String                 @db.VarChar(120)
+  url                  String                 @db.VarChar(1000)
+  icone                String?                @db.VarChar(50)
+  servicoDetectado     String?                @db.VarChar(50)
+  ordem                Int                    @default(0)
+  ativo                Boolean                @default(true)
+  destaque             Boolean                @default(false)
+  cliquesTotais        Int                    @default(0)
+  criadoEm             DateTime               @default(now())
+  atualizadoEm         DateTime               @updatedAt
+  excluidoEm           DateTime?
+
+  perfil               Perfil                 @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  eventos              EventoAcesso[]
+
+  @@index([perfilId, ordem])
+  @@index([perfilId, ativo, excluidoEm])
+  @@map("links")
+}
+
+model ConfiguracaoVisual {
+  id                   String                 @id @default(uuid())
+  perfilId             String                 @unique
+  temaPredefinido      String                 @default("padrao") @db.VarChar(50)
+  corFundo             String                 @default("#09090B") @db.VarChar(20)
+  corDestaque          String                 @default("#B2FF00") @db.VarChar(20)
+  corTexto             String                 @default("#FFFFFF") @db.VarChar(20)
+  corBorda             String                 @default("rgba(255, 255, 255, 0.12)") @db.VarChar(40)
+  estiloBotao          String                 @default("outline") @db.VarChar(30)
+  arredondamentoBotao  String                 @default("rounded-xl") @db.VarChar(30)
+  fonteFamilia         String                 @default("sans") @db.VarChar(50)
+  efeitoVidro          Boolean                @default(true)
+  efeitoAurora         Boolean                @default(true)
+  criadoEm             DateTime               @default(now())
+  atualizadoEm         DateTime               @updatedAt
+
+  perfil               Perfil                 @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+
+  @@map("configuracoes_visuais")
+}
+
+model Sessao {
+  id                   String                 @id @default(uuid())
+  usuarioId            String
+  tokenHash            String                 @unique @db.VarChar(64)
+  ipAnonimizado        String?                @db.VarChar(64)
+  userAgent            String?                @db.VarChar(255)
+  expiraEm             DateTime
+  criadoEm             DateTime               @default(now())
+
+  usuario              Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([tokenHash])
+  @@index([expiraEm])
+  @@map("sessoes")
+}
+
+model Convite {
+  id                   String                 @id @default(uuid())
+  perfilId             String
+  email                String                 @db.VarChar(191)
+  tokenHash            String                 @unique @db.VarChar(64)
+  expiraEm             DateTime
+  usado                Boolean                @default(false)
+  criadoPorId          String
+  criadoEm             DateTime               @default(now())
+
+  perfil               Perfil                 @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  criadoPor            Usuario                @relation("ConvitesCriados", fields: [criadoPorId], references: [id], onDelete: Restrict)
+
+  @@index([email])
+  @@index([tokenHash])
+  @@map("convites")
+}
+
+model TokenRecuperacaoSenha {
+  id                   String                 @id @default(uuid())
+  usuarioId            String
+  tokenHash            String                 @unique @db.VarChar(64)
+  expiraEm             DateTime
+  usado                Boolean                @default(false)
+  criadoEm             DateTime               @default(now())
+
+  usuario              Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@map("tokens_recuperacao_senha")
+}
+
+model EventoAcesso {
+  id                   String                 @id @default(uuid())
+  perfilId             String
+  linkId               String?
+  tipoEvento           TipoEvento
+  identificadorAnonimo String                 @db.VarChar(64)
+  dispositivo          TipoDispositivo        @default(OUTRO)
+  navegador            String?                @db.VarChar(50)
+  criadoEm             DateTime               @default(now())
+
+  perfil               Perfil                 @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  link                 Link?                  @relation(fields: [linkId], references: [id], onDelete: SetNull)
+
+  @@index([perfilId, criadoEm])
+  @@index([linkId, criadoEm])
+  @@index([tipoEvento, criadoEm])
+  @@map("eventos_acesso")
+}
+
+model HistoricoAlteracao {
+  id                   String                 @id @default(uuid())
+  perfilId             String
+  usuarioId            String
+  versao               Int
+  dadosJson            String                 @db.LongText
+  criadoEm             DateTime               @default(now())
+
+  perfil               Perfil                 @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  usuario              Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@index([perfilId, versao])
+  @@map("historicos_alteracao")
+}
+
+model RegistroAuditoria {
+  id                   String                 @id @default(uuid())
+  usuarioId            String?
+  acao                 String                 @db.VarChar(80)
+  entidade             String                 @db.VarChar(60)
+  entidadeId           String?                @db.VarChar(64)
+  detalhesJson         String?                @db.Text
+  ipAnonimizado        String?                @db.VarChar(64)
+  criadoEm             DateTime               @default(now())
+
+  usuario              Usuario?               @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([usuarioId, criadoEm])
+  @@index([acao, criadoEm])
+  @@map("registros_auditoria")
+}
