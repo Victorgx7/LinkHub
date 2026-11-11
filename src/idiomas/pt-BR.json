@@ -1,0 +1,37 @@
+{
+  "comum": {
+    "carregando": "Carregando...",
+    "salvar": "Salvar",
+    "salvando": "Salvando...",
+    "cancelar": "Cancelar",
+    "excluir": "Excluir",
+    "editar": "Editar",
+    "copiar": "Copiar",
+    "copiado": "Copiado para a área de transferência!",
+    "confirmar": "Confirmar",
+    "voltar": "Voltar"
+  },
+  "navegacao": {
+    "painel": "Painel",
+    "perfis": "Perfis",
+    "usuarios": "Usuários",
+    "backups": "Backups",
+    "configuracoes": "Configurações",
+    "sair": "Sair"
+  },
+  "painel": {
+    "titulo": "Visão Geral",
+    "visualizacoesTotais": "Visualizações Totais",
+    "visitantesUnicos": "Visitantes Únicos",
+    "totalCliques": "Total de Cliques",
+    "taxaConversao": "Taxa de Cliques (CTR)",
+    "linksMaisAcessados": "Links Mais Acessados",
+    "dispositivos": "Dispositivos"
+  },
+  "editor": {
+    "titulo": "Editor Visual",
+    "adicionarLink": "Adicionar Novo Link",
+    "personalizar": "Personalização Visual",
+    "previa": "Pré-visualização em Tempo Real"
+  }
+}

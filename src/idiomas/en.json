@@ -1,0 +1,37 @@
+{
+  "comum": {
+    "carregando": "Loading...",
+    "salvar": "Save",
+    "salvando": "Saving...",
+    "cancelar": "Cancel",
+    "excluir": "Delete",
+    "editar": "Edit",
+    "copiar": "Copy",
+    "copiado": "Copied to clipboard!",
+    "confirmar": "Confirm",
+    "voltar": "Back"
+  },
+  "navegacao": {
+    "painel": "Dashboard",
+    "perfis": "Profiles",
+    "usuarios": "Users",
+    "backups": "Backups",
+    "configuracoes": "Settings",
+    "sair": "Sign out"
+  },
+  "painel": {
+    "titulo": "Overview",
+    "visualizacoesTotais": "Total Views",
+    "visitantesUnicos": "Unique Visitors",
+    "totalCliques": "Total Clicks",
+    "taxaConversao": "Click-Through Rate (CTR)",
+    "linksMaisAcessados": "Top Links",
+    "dispositivos": "Devices"
+  },
+  "editor": {
+    "titulo": "Visual Editor",
+    "adicionarLink": "Add New Link",
+    "personalizar": "Visual Customization",
+    "previa": "Real-time Preview"
+  }
+}
